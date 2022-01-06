@@ -1,0 +1,61 @@
+<!--<html>-->
+<!--<head>-->
+<!--    <title>Question {{question.id}}</title>-->
+<!--    <style>-->
+<!--        body {-->
+<!--            background-image: url(https://oem.faisys.com/image/demo2.png);-->
+<!--        }-->
+<!--        .Div {-->
+<!--            width: 700px;-->
+<!--            background-color:rgba(0, 0, 0, 0.5);-->
+<!--            border: #000000 0px solid;-->
+<!--            margin: auto;-->
+<!--            padding: 10px;-->
+<!--        }-->
+<!--        .Question{-->
+<!--            width:700px;-->
+<!--            height: 150px;-->
+<!--        }-->
+<!--        .questiondiv{-->
+<!--            height: 50px;-->
+<!--            text-align: center;-->
+<!--            margin: 0px;-->
+<!--        }-->
+<!--        .choicediv{-->
+<!--            display: flex;-->
+<!--            flex-direction: row;-->
+<!--        }-->
+<!--        .choice{-->
+<!--            margin: 60px;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--    <div class="Div">-->
+<!--        <div class="Question">-->
+<!--            <div class="questiondiv">-->
+<!--                <h1 class="question">{{question.question_text}}</h1>-->
+<!--            </div>-->
+<!--            <div class="choicediv">-->
+<!--                {% for choice in question.choice_set.all %}-->
+<!--                    <h4 class="choice">{{choice.choice_text}}</h4>-->
+<!--                {% endfor %}-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--    </div>-->
+<!--</body>-->
+<!--</html>-->
+
+<form action="{% url 'polls:vote' question.id%}" method="post">
+    {% csrf_token %}
+    <fieldset>
+        <legend><h1>{{question.question_text}}</h1></legend>
+        {% if error_message %}<p><strong>{{error_message}}</strong></p>{% endif %}
+        {% for choice in question.choice_set.all %}
+            <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{choice.id}}">
+            <label for="choice{{ forloop.counter }}">{{choice.choice_text}}</label><br>
+        {% endfor %}
+    </fieldset>
+    <input type="submit" value="Vote">
+</form>
