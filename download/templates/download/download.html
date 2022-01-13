@@ -1,0 +1,32 @@
+{% load static %}
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Free Download</title>
+        <link rel="stylesheet" type="text/css" href="{%static 'download/download.css'%}">
+    </head>
+    <body>
+        <div class="Head">
+            <div class="img">&nbsp;</div>
+            <div class="home" id="active"><a>Home</a></div>
+            <div class="download"><a href="Download">Download</a></div>
+            <div class="about"><a>About</a></div>
+        </div>
+        <div class="Body">
+            {%for file in file_list%}
+            <div class="box">
+                <div class="filename">文件:{{file.filename}}</div>
+                <div class="pub_date">提交日期:{{file.pub_date}}</div>
+                <div class="download_num">下载量:{{file.download_num}}</div>
+                <form class="submit" method="post" action="{% url 'download:getfile' file.id%}">
+                    {% csrf_token %}
+                    <input type="submit" name="submit" value="下载" style="color: aqua; font-size: 14px; background-color: rgba(0, 0, 0, 0); width: auto; height: 40px; ">
+                </form>
+            </div>
+            {%endfor%}
+        </div>
+        <div class="Tail">
+
+        </div>
+    </body>
+</html>
