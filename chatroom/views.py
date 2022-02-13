@@ -61,7 +61,7 @@ def logout(request):
             del request.session['statu']
             return response
         else:
-            return redirect('/chatroom/')
+            return redirect('/login/')
     else:
         return redirect('/chatroom/')
 
