@@ -1,76 +1,71 @@
-from datetime import datetime
-from django.shortcuts import render
-from django.http import HttpResponse
-import time
 import json
-from login.models import User
-from chatroom.models import Msg
+from turtle import left
+from django.http import HttpResponse, request
+from django.shortcuts import redirect, render
+from django.http import HttpResponse
+from django.contrib.auth.models import User
+import datetime
+from .models import Message
 # Create your views here.
-def index(request):
-    return render(request,'chatroom/index.html')
+def chatroom(request):
+    statu=request.session.get('statu')
+    if(statu):
+        userobj = User.objects.get(username=request.session.get('account'))
+        context={'userfullname':userobj.get_full_name(),'useraccount':userobj.username}
+        return render(request,'chatroom/chatroom.html',context)
+    return redirect('/login')
+
 def getinfor(request):
-    try:
-        Check()
-        userid = request.COOKIES.get('userid')
-        myjs = ropen()
-        myjs[userid]=str(time.time())
-        wopen(json.dumps(myjs))
-        usernames={}
-        msgs = {}
-        a=1
-        for i in myjs:
-            username = User.objects.get(id=int(i)).username
-            usernames[username]=''
-        for i in Reverse(Msg.objects.all())[:10]:
-            msgs[str(a)+':'+i.user.username]=i.msg
-            a+=1
-        if Msg.objects.all().count()>10:
-            for n in Msg.objects.all()[:Msg.objects.all().count()-10]:
-                n.delete()
-        # print(msgs)
-        context = {"users":usernames,"username":User.objects.get(id=int(userid)).username,"msgs":msgs}
-        return HttpResponse(json.dumps(context,ensure_ascii=False))
-    except:
-        with open('D:/Codes/Python-Codes/lg3/chatroom/time.txt','r') as f:
-            mystr = f.read()
-            f.close()
-        mystr = list(mystr)
-        mystr.pop()
-        s=''
-        for i in mystr:
-            s+=i
-        with open('D:/Codes/Python-Codes/lg3/chatroom/time.txt','w') as f:
-            f.write(s)
-        return HttpResponse('false')
+    value=request.GET['value']
+    if(value=='allinfor'):
+        enable_msg_num = request.GET['enable_msg_num']
+        userobj = User.objects.get(username=request.session.get('account'))
+        userobj.last_login=datetime.datetime.now()
+        userobj.save()
+        users = User.objects.all().exclude(username=request.session.get('account'))
+        fives = datetime.timedelta(seconds=2.5)
+        nowtime = datetime.datetime.now()
+        usersobj={}
+        if users:
+            for i in users:
+                if(nowtime-i.last_login<fives):
+                    usersobj[i.get_full_name()]=''
+        right = Message.objects.all().count()
+        left = right-int(enable_msg_num)
+        if(left<=0):
+            msgs = Message.objects.all()
+        else:
+            msgs = Message.objects.all()[left:right+1]
+        msgsobj={}
+        num=0
+        for i in msgs:
+            msgsobj[num]=i.user.get_full_name()+':'+i.message
+            num+=1
+        context={'usersobj':usersobj,'msgsobj':msgsobj,'msgsnum':Message.objects.all().count()}
+        return HttpResponse(json.dumps(context))
+    elif(value=='msgcount'):
+        userobj=User.objects.get(username=request.session.get('account'))
+        msgs = Message.objects.filter(user=userobj)
+        msgcount = 0
+        for i in msgs:
+            msgcount+=1
+        return HttpResponse(json.dumps({'statu':'true','msgcount':str(msgcount)}))
+
+def logout(request):
+    if(request.GET['flag']=='true'):
+        statu=request.session.get('statu')
+        if(statu):
+            context={'statu':'true'}
+            response=HttpResponse(json.dumps(context))
+            response.delete_cookie('sessionid')
+            del request.session['statu']
+            return response
+        else:
+            return redirect('/chatroom/')
+    else:
+        return redirect('/chatroom/')
 
 def sendmsg(request):
-    msg = request.GET['msg']
-    userobj = User.objects.get(id=int(request.COOKIES.get('userid')))
-    m = Msg.objects.create(user=userobj,msg=msg)
-    m.save()
-    return HttpResponse('ok')
-
-def Check():
-    myjs = ropen()
-    nowt = time.time()
-    name = []
-    for i in myjs:
-        # print(nowt-float(myjs[i]))
-        if(nowt-float(myjs[i])>3):
-            name.append(i)
-    for i in name:
-        del myjs[i]
-    wopen(json.dumps(myjs))
-
-def ropen():
-    with open('D:/Codes/Python-Codes/lg3/chatroom/time.txt','r') as f:
-        myjs = json.loads(f.read())
-        f.close()
-    return myjs
-
-def wopen(myjsstr):
-    with open('D:/Codes/Python-Codes/lg3/chatroom/time.txt','w') as f:
-        f.write(myjsstr)
-
-def Reverse(lst):
-    return [ele for ele in reversed(lst)]
+    userobj = User.objects.get(username=request.session.get('account'))
+    Message.objects.create(user=userobj,message=request.GET['msg'])
+    return HttpResponse(json.dumps({'statu':'true'}))

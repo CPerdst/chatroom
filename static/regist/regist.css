@@ -1,0 +1,42 @@
+body{
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 100%;
+}
+input{
+    border: 1px solid black;
+    border-radius: 5px;
+    box-shadow: 5px;
+    height: 30px;
+    width: auto;
+    font-size: 16px;
+}
+#button-box{
+    width: 17em;
+    height: 2.3em;
+    display: flex;
+    flex-direction:row;
+}
+button{
+    height: inherit;
+    width: 48%;
+    background-color: #dedede;
+    border: 0;
+    border-radius: 5px;
+}
+#return{
+    margin-left: 8.33;
+}
+#l_name,#password,#email{
+    margin-top: 10px;
+}
+#email{
+    margin-bottom: 12px;
+}
+h4{
+    width: 17em;
+    word-wrap: break-word;
+}

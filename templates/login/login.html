@@ -1,0 +1,87 @@
+{%load static%}
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>登录</title>
+        <link rel="stylesheet" type="text/css" href="{%static 'login/login.css'%}">
+        <style>
+            div#tool-box{
+                position: fixed;
+                bottom: 10px;
+                right: 0;
+                height: 27.6px;
+                width: 195.66px;
+            }
+        </style>
+    </head>
+    <body>
+        <form>
+            <input type="text" placeholder="账号" id="account" name="account">
+            <input type="password" placeholder="密码" id="password" name="password">
+        </form>
+        <div id="button-box">
+            <button id="button-login" onclick="Get()">登录</button>
+            <button id="button-regist" onclick="GoRegist(document.getElementById('account').value)">注册</button>
+        </div>
+        <p id="infor"></p>
+        <div id="tool-box">
+            <button id="forget-account" onclick='javascript:window.open("/forgetaccount", "newwindow", "height=500, width=500, top=250, left=250, toolbar=no, menubar=no, scrollbars=no, resizable=no,location=no, status=no")'>忘记账号</button>
+            <button id="find-password">找回密码</button>
+        </div>
+        <script>
+            function Get(){
+                if(!CheckInput()){return;}
+                if(window.XMLHttpRequest){
+                    var xhr = new XMLHttpRequest();
+                }else{
+                    var xhr = new ActiveXObject('Microsoft.XMLHTTP');
+                }
+                xhr.onreadystatechange=function(){
+                    if(xhr.readyState==4&&xhr.status==200){
+                        var mydict = eval('('+xhr.response+')')
+                        console.log(mydict)
+                        if(mydict.statu=='true'){
+                            window.location.href='/chatroom/'
+                        }else{
+                            setinfor(mydict.information)
+                        }
+                    }
+                }
+                var account = document.getElementById('account').value
+                var password = document.getElementById('password').value
+                var urlstr='/login/checklogin/?account='+account+'&password='+password
+                console.log(urlstr)
+                xhr.open('get',urlstr,true)
+                xhr.send()
+            }
+            function GoRegist(str){
+                window.location.href='/regist/'
+            }
+            function CheckInput(){
+                var account = document.getElementById('account').value.split(' ').join('')
+                var password = document.getElementById('password').value.split(' ').join('')
+                if(account!=''&&password!=''){
+                    var b =0
+                    for(var i in account)
+                    {
+                        b++
+                        var tr = String(account[i])
+                        if(!(tr.charCodeAt()>=48&&tr.charCodeAt()<=57)){
+                            setinfor('账号只包含数字,请重新确认是否正确输入!')
+                            return false
+                        }
+                    }
+                    if(b!=8){
+                        setinfor('账号包含8位数字,请确认是否正确输入!')
+                        return false
+                    }else{setinfor('');return true;}
+                }
+                setinfor('请将信息输入完整!')
+                return false
+            }
+            function setinfor(str){
+                document.getElementById('infor').innerText=str
+            }
+        </script>
+    </body>
+</html>

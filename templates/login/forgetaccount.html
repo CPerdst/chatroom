@@ -1,0 +1,59 @@
+<style>
+    input{
+        width: 18em;
+        height: 2.5em;
+        border: 1px solid black;
+        font-size: 15px;
+        font-weight: bolder;
+    }
+    button{
+        width: 100px;
+        height: 30px;
+        border: 0;
+        font-size: 15px;
+        font-weight: bolder;
+        margin-left: 20px;
+    }
+</style>
+<input type="text" id="email" name="email" placeholder="请输入您的邮箱!">
+<button onclick="Get()">找回</button>
+<hr>
+<h4 id="account"></h4>
+<script>
+    function Get(){
+        if(!Check()){return;}
+        function func(mydict){
+            document.getElementById('account').innerHTML=mydict.information.username+":"+mydict.information.account
+        }
+        getxhr('get','/forgetaccount/?email='+document.getElementById('email').value,func)
+    }
+    function Check(){
+        var email = document.getElementById('email').value
+        var e_l = email.split('@')[0]
+        var e_r = email.split('@')[1]
+        if(e_l&&e_r){
+            var r_l = e_r.split('.')[0]
+            var r_r = e_r.split('.')[1]
+            if(r_l&&r_r){
+                return true
+            }
+        }
+        document.getElementById('account').innerText='请检查您的邮箱地址格式!'
+        return false
+    }
+    function getxhr(method,url,func){
+                if(window.XMLHttpRequest){
+                    var xhr = new XMLHttpRequest()
+                }else{
+                    var xhr = new ActiveXObject('Microsoft.XMLHTTP')
+                }
+                xhr.onreadystatechange = function(){
+                    if(xhr.readyState==4&&xhr.status==200){
+                        mydict=eval('('+xhr.response+')')
+                        func(mydict)
+                    }
+                }
+                xhr.open(method,url,true)
+                xhr.send()
+            }
+</script>

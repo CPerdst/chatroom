@@ -1,0 +1,39 @@
+body{
+    margin: 0;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+form{
+    display: flex;
+    flex-direction: column;
+}
+#button-box{
+    width: 17em;
+    height: 2.3em;
+    display: flex;
+    flex-direction:row;
+}
+button{
+    height: inherit;
+    width: 48%;
+    background-color: #dedede;
+    border: 0;
+    border-radius: 5px;
+}
+input{
+    border: 1px solid black;
+    border-radius: 5px;
+    box-shadow: 5px;
+    height: 30px;
+    width: auto;
+    font-size: 16px;
+}
+#password{
+    margin-top: 10px;
+}
+#button-regist{
+    margin-left: 8.33;
+}

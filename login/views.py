@@ -1,46 +1,70 @@
-from django.shortcuts import render
+from datetime import date, datetime
+from tkinter.tix import Tree
+from django.shortcuts import redirect, render
 from django.http import HttpResponse
-from .models import User
+from django.contrib.auth.models import User
+import json,random
+
+from django.template import context
 # Create your views here.
-def index(request):
-    # print(request.GET)
-    try:
-        account = request.GET['account']
-        password = request.GET['password']
-        userobj = User.objects.filter(account=account,password=password)
-        # print(userobj[0].id)
-        if(userobj):
-            response = HttpResponse('login successfully')
-            response.set_cookie('userid',userobj[0].id,expires=60*60*24)
-            return response
+def login(request):
+    statu=request.session.get('statu')
+    if(statu):
+        return redirect('/chatroom/')
+    else:
+        return render(request,'login/login.html')
+
+def checklogin(request):
+    user = User.objects.filter(username=request.GET['account'])
+    if user:
+        if(user[0].password==request.GET['password']):
+            request.session['statu']=True
+            request.session['account']=request.GET['account']
+            mydict={
+                'statu':'true','information':'登录成功!'
+            }
+            return HttpResponse(json.dumps(mydict))
         else:
-            response = HttpResponse('账号或密码错误')
-            response.delete_cookie('userid')
-            return response
-    except:
-        return render(request,'login/index.html')
+            mydict={
+                'statu':'false','information':'账号密码不匹配!'
+            }
+            return HttpResponse(json.dumps(mydict))
+    else:
+        mydict={
+                'statu':'false','information':'没有此账号!'
+            }
+        return HttpResponse(json.dumps(mydict))
 
 def regist(request):
-    print(request.GET)
-    try:
-        username=request.GET['username']
-        account=request.GET['account']
-        password=request.GET['password']
-        userobj = User.objects.filter(account=account)
-        if(userobj):
-            json = '{"state":"0","information":"此账号已被注册!"}'
-            print(str(json))
-            return HttpResponse(json)
-        else:
-            user = User.objects.create(username=username,account=account,password=password)
-            user.save()
-            json = '{"state":"1","information":"注册成功<a href=\'/login/\'>点我<a/>登录"}'
-            print(str(json))
-            response = HttpResponse(json)
-            response.set_cookie('userid',user.id,expires=60*60*24)
-            return response
-    except:
-        return render(request,'login/regist.html')
+    return render(request,'regist/regist.html')
 
-def reurl(request):
-    return render(request,'login/reurl.html')
+def getregist(request):
+    first_name = request.GET['first_name']
+    last_name = request.GET['last_name']
+    password = request.GET['password']
+    email = request.GET['email']
+    user = User.objects.filter(email=email)
+    if user:
+        mydict={'statu':'false','information':'已有此邮件用户,请确认您的邮件是否正确!,或者尝试<a href="/login/">点此</a>登录'}
+        return HttpResponse(json.dumps(mydict))
+    else:
+        account = random.randint(10000000,99999999)
+        User.objects.create(first_name=first_name,last_name=last_name,password=password,username=account,email=email,last_login=datetime.now())
+        mydict={'statu':'true','information':'注册成功,您的账号为'+str(account)+',<a href="/login">点此</a>登录'}
+        return HttpResponse(json.dumps(mydict))
+
+def forgetaccount(request):
+    try:
+        email = request.GET['email']
+    except:
+        return render(request,'login/forgetaccount.html')
+    
+    if email:
+        users = User.objects.filter(email=email)
+        if users:
+            context={'statu':'true','information':{'account':users[0].username,'username':users[0].get_full_name()}}
+            return HttpResponse(json.dumps(context))
+        else:
+            context={'statu':'false','information':'未找到拥有此邮箱的用户,请检查输入是否正确!'}
+            return HttpResponse(json.dumps(context))
+        

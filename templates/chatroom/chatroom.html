@@ -1,0 +1,197 @@
+{%load static%}
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>简单聊天房间</title>
+        <link rel="stylesheet" type="text/css" href="{%static 'chatroom/chatroom.css'%}">
+    </head>
+    <body>
+        <div id="top-box">
+            <ul id="ul-left">
+                <li id="account"><h4>{{useraccount}}</h4></li>
+                <li id="name" onclick="getmsgcount()"><h4>{{userfullname}}</h4></li>
+            </ul>
+            <ul id="ul-right">
+                <li id="log-out" onclick="LogOut()"><h4>注销用户</h4></li>
+            </ul>
+        </div>
+        <div id="bottom-box">
+            <div id="left-box">
+                <div style="width: 100%;height: 8%;display: flex;align-items: center;"><h4 style="margin: 10px 0px 5px 10px;">在线客户:</h4></div>
+                <hr style="width: 100%; color: #987cb9;">
+                <div style="width: 100%;height: 8%;display: flex;align-items: center;"><h4 style="margin: 10px 0px 5px 10px;">你自己</h4></div><hr style="width: 100%; color: #987cb9;">
+            </div>
+            <div id="right-box">
+                <div id="right-top-box">
+                    <div class="inner" id="inner-top">
+                    </div>
+                </div>
+                <div id="right-bottom-box">
+                    <div class="inner" id="inner-bottom">
+                        <div><textarea id="textarea"></textarea></div>
+                        <div id="bt-box"><button id="bt1" onclick="Get()">发送</button><button id="bt2" onclick="Del()">删除</button></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            var enable_msg_num = 20
+
+            function LogOut(){
+                if(window.XMLHttpRequest){
+                    var xhr = new XMLHttpRequest();
+                }else{
+                    var xhr = new ActiveXObject('Microsoft.XMLHTTP');
+                }
+                xhr.onreadystatechange=function(){
+                    if(xhr.readyState==4&&xhr.status==200){
+                        var mydict = eval('('+xhr.response+')')
+                        if(mydict.statu){
+                            window.location.href='/login/'
+                        }
+                    }
+                }
+                xhr.open('get','/chatroom/logout/?flag=true',true)
+                xhr.send()
+            }
+            
+            window.onload=function(){
+                // var scollbar_box = document.getElementById('inner-top')
+                // scollbar_box.scrollTop=scollbar_box.scrollHeight
+                // console.log(scollbar_box.scrollTop)
+                var st = setInterval(function(){
+                    if(window.XMLHttpRequest){
+                        var xhr = new XMLHttpRequest();
+                    }else{
+                        var xhr = new ActiveXObject('Microsoft.XMLHTTP');
+                    }
+                    xhr.onreadystatechange=function(){
+                        if(xhr.readyState==4&&xhr.status==200){
+                            var mydict = eval('('+xhr.response+')')
+                            var msgsobj = mydict.msgsobj
+                            var usersobj = mydict.usersobj
+                            var usersobjnum=0
+                            var msgsobjnum=0
+                            for(var i in usersobj){
+                                usersobjnum++
+                            }
+                            for(var i in msgsobj){
+                                msgsobjnum++
+                                // console.log(msgsobj[i])
+                            }
+                            var htmlusers = document.getElementsByClassName('user')
+                            var htmluserscount=-3
+                            for(var i in htmlusers){
+                                htmluserscount++
+                            }
+                            if(usersobjnum!==htmluserscount){
+                                html='<div style="width: 100%;height: 8%;display: flex;align-items: center;"><h4 style="margin: 10px 0px 5px 10px;">在线客户:</h4></div><hr style="width: 100%; color: #987cb9;"><div style="width: 100%;height: 8%;display: flex;align-items: center;"><h4 style="margin: 10px 0px 5px 10px;">你自己</h4></div><hr style="width: 100%; color: #987cb9;">'
+                                for(var i in usersobj){
+                                    html+='<div style="width: 100%;height: 8%;display: flex;align-items: center;"><h4 style="margin: 10px 0px 5px 10px;" class="user">'+i.split(' ')[0]+i.split(' ')[1]+'</h4></div><hr style="width: 100%; color: #987cb9;">'
+                                }
+                                document.getElementById('left-box').innerHTML=html
+                            }
+                            var htmlmsgs = document.getElementsByClassName('msg-box')
+                            var htmlmsgscount = -3
+                            for(var i in htmlmsgs){
+                                htmlmsgscount++
+                            }
+                            // console.log(htmlmsgscount)
+                            // console.log(msgsobjnum)
+                            if(msgsobjnum!==htmlmsgscount){
+                                if(enable_msg_num<mydict.msgsnum){html='<div id="innder-top-title"><h3 onclick="add()">加载更多</h3></div><hr style="width: 100%; background-color: rgba(0, 0, 0, 20%);">'}
+                                else {html='<hr style="width: 100%; background-color: rgba(0, 0, 0, 20%);">'}
+                                for(var i in msgsobj){
+                                    html+='<div class="msg-box"><div class="user-infor"><h4>'+msgsobj[i].split(':')[0].split(' ')[0]+msgsobj[i].split(':')[0].split(' ')[1]+'</h4></div><div class="user-msg"><h5>'+msgsobj[i].split(':')[1]+'</h5></div></div><hr style="width: 100%; background-color: rgba(0, 0, 0, 20%);">'
+                                }
+                                document.getElementById('inner-top').innerHTML=html
+                                gobottom()
+                            }else{
+                                // console.log(htmlmsgs)
+                                for(var i = 0;i<htmlmsgscount;i++){
+                                    // console.log(htmlmsgs[i].innerHTML.split('<h4>')[1].split('</h4>')[0])
+                                    var username = htmlmsgs[i].innerHTML.split('<h4>')[1].split('</h4>')[0]
+                                    var message = htmlmsgs[i].innerHTML.split('<h5>')[1].split('</h5>')[0]
+                                    var msgstr = msgsobj[i]
+                                    var str = String(msgstr)
+                                    var un = str.split(':')[0].split(' ')[0]+str.split(':')[0].split(' ')[1]
+                                    var msg = str.split(':')[1]
+                                    // var msg = msgsobj[i].split(':')[1]
+                                    // un = un.split(' ')[0]+un.split(' ')[1]
+                                    // console.log(msg==message)
+                                    // console.log(msg+':'+message)
+                                    if(un!=username||msg!==message){
+                                        
+                                        if(enable_msg_num<mydict.msgsnum){html='<div id="innder-top-title"><h3 onclick="add()">加载更多</h3></div><hr style="width: 100%; background-color: rgba(0, 0, 0, 20%);">'}
+                                        else {html='<hr style="width: 100%; background-color: rgba(0, 0, 0, 20%);">'}
+                                        for(var i in msgsobj){
+                                            html+='<div class="msg-box"><div class="user-infor"><h4>'+msgsobj[i].split(':')[0].split(' ')[0]+msgsobj[i].split(':')[0].split(' ')[1]+'</h4></div><div class="user-msg"><h5>'+msgsobj[i].split(':')[1]+'</h5></div></div><hr style="width: 100%; background-color: rgba(0, 0, 0, 20%);">'
+                                        }
+                                        document.getElementById('inner-top').innerHTML=html
+                                        console.log(html)
+                                        gobottom()
+                                        return
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    xhr.open('get','/chatroom/getinfor/?value=allinfor&enable_msg_num='+enable_msg_num,true)
+                    xhr.send()
+                },1000)
+            }
+
+            function Get(){
+                if(document.getElementById('textarea').value.split(' ').join('')==''){return;}
+                if(window.XMLHttpRequest){
+                    var xhr = new XMLHttpRequest();
+                }else{
+                    var xhr = new ActiveXObject('Microsoft.XMLHTTP');
+                }
+                xhr.onreadystatechange=function(){
+                    if(xhr.readyState==4&&xhr.status==200){
+                        var mydict = eval('('+xhr.response+')')
+                    }
+                }
+                xhr.open('get','/chatroom/sendmsg/?msg='+document.getElementById('textarea').value,true)
+                xhr.send()
+                document.getElementById('textarea').value=''
+            }
+
+            function gobottom(){
+                var scollbar_box = document.getElementById('inner-top')
+                scollbar_box.scrollTop=scollbar_box.scrollHeight
+            }
+        
+            function Del(){
+                document.getElementById('textarea').value=''
+            }
+        
+            function getmsgcount(){
+                function func(xhr){
+                    var mydict = eval('('+xhr.response+')')
+                    alert('目前为止您已经发送了'+mydict.msgcount+'条消息!')
+                }
+                var xhr = getxhr('get','/chatroom/getinfor/?value=msgcount',func)
+            }
+            
+            function getxhr(method,url,func){
+                if(window.XMLHttpRequest){
+                    var xhr = new XMLHttpRequest()
+                }else{
+                    var xhr = new ActiveXObject('Microsoft.XMLHTTP')
+                }
+                xhr.onreadystatechange = function(){
+                    if(xhr.readyState==4&&xhr.status==200){
+                        func(xhr)
+                    }
+                }
+                xhr.open(method,url,true)
+                xhr.send()
+            }
+            function add(){
+                enable_msg_num+=10
+            }
+        </script>
+    </body>
+</html>

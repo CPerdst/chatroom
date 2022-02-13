@@ -1,9 +1,10 @@
 from unicodedata import name
-from django.urls import path
 from . import views
+from django.urls import path
 app_name = 'chatroom'
 urlpatterns=[
-    path('',views.index,name='chatroom'),
+    path('',views.chatroom,name='chatroom'),
+    path('logout/',views.logout,name='logout'),
     path('getinfor/',views.getinfor,name='getinfor'),
-    path('sendmsg/',views.sendmsg,name='sendmsg')
+    path('sendmsg/', views.sendmsg, name='sendmsg')
 ]

@@ -1,0 +1,72 @@
+{%load static%}
+<html>
+    <head><meta charset="utf-8"><title>注册</title><link rel="stylesheet" type="text/css" href="{%static 'regist/regist.css'%}"></head>
+    <body>
+        <input type="text" id="f_name" name="f_name" placeholder="first-name">
+        <input type="text" id="l_name" name="l_name" placeholder="last-name">
+        <input type="password" id="password" name="password" placeholder="密码">
+        <input type="text" id="email" name="email" placeholder="邮箱地址">
+        <div id="button-box">
+            <button id="button-send" onclick="Get()">注册</button>
+            <button id="return" onclick="Return()">返回</button>
+        </div>
+        <h4 id="infor"></h4>
+        <script>
+            function Get(){
+                if(!CheckInput()){return;}
+                if(window.XMLHttpRequest){
+                    var xhr = new XMLHttpRequest();
+                }else{
+                    var xhr = new ActiveXObject('Microsoft.XMLHTTP');
+                }
+                xhr.onreadystatechange=function(){
+                    if(xhr.readyState==4&&xhr.status==200){
+                        var mydict = eval('('+xhr.response+')')
+                        setInfor(mydict.information)
+                    }
+                }
+                var first_name = document.getElementById('f_name').value
+                var last_name = document.getElementById('l_name').value
+                var email = document.getElementById('email').value
+                var password = document.getElementById('password').value
+                var urlstr='/regist/getregist/?first_name='+first_name+'&last_name='+last_name+'&password='+password+'&email='+email
+                xhr.open('get',urlstr,true)
+                xhr.send()
+            }
+            function CheckInput(){
+                setInfor('')
+                var email = document.getElementById('email').value
+                var password = document.getElementById('password').value
+                var f = document.getElementById('f_name').value
+                var l = document.getElementById('l_name').value
+                if(email!=''&&password!=''&&f!=''&&l!=''){
+                    for(var i=0;i<password.length;i++){
+                        var code = password[i].charCodeAt()
+                        if(!((code>=65&&code<=90)||(code>=48&&code<=57)||(code>=97&&code<=122))){
+                            setInfor('密码只支持26位字母和数字!')
+                            return false
+                        }
+                    }
+                    var e_l=email.split('@')[0]
+                    var e_r=email.split('@')[1]
+                    if(e_l&&e_r){
+                        var r_l=e_r.split('.')[0]
+                        var r_r=e_r.split('.')[1]
+                        if(r_l&&r_r){
+                            return true
+                        }
+                    }
+                    setInfor('邮箱格式错误!')
+                    return false
+                }else{
+                    setInfor('请将信息填写完整!')
+                    return false
+                }
+            }
+            function setInfor(str){
+                document.getElementById('infor').innerHTML=str
+            }
+            function Return(){history.back(-1)}
+        </script>
+    </body>
+</html>
